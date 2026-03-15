@@ -54,11 +54,12 @@ export function MaterialSection() {
               />
               <InputField
                 label="Desperdicio"
-                value={f.wasteFactor}
-                unit="x"
-                min={1}
-                step={0.01}
-                onChange={(v) => updateFilament(f.id, { wasteFactor: v })}
+                value={Math.round((f.wasteFactor - 1) * 100)}
+                unit="%"
+                min={0}
+                step={1}
+                tooltip="Porcentaje de filamento extra que se pierde por purgas, soportes o fallos. Ej: 10 = 10% más de material del estimado."
+                onChange={(v) => updateFilament(f.id, { wasteFactor: 1 + v / 100 })}
               />
             </div>
           </div>

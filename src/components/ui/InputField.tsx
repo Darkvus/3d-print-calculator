@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Info } from 'lucide-react'
 
 interface InputFieldProps {
   label: string
@@ -6,10 +7,11 @@ interface InputFieldProps {
   unit?: string
   min?: number
   step?: number
+  tooltip?: string
   onChange: (value: number) => void
 }
 
-export function InputField({ label, value, unit, min = 0, step = 0.01, onChange }: InputFieldProps) {
+export function InputField({ label, value, unit, min = 0, step = 0.01, tooltip, onChange }: InputFieldProps) {
   const [display, setDisplay] = useState(String(value))
 
   // Sync when value changes externally (e.g. unit toggle)
@@ -35,7 +37,18 @@ export function InputField({ label, value, unit, min = 0, step = 0.01, onChange 
 
   return (
     <div className="flex flex-col gap-1">
-      <label className="text-xs font-medium text-slate-400 uppercase tracking-wide">{label}</label>
+      <div className="flex items-center gap-1">
+        <label className="text-xs font-medium text-slate-400 uppercase tracking-wide">{label}</label>
+        {tooltip && (
+          <div className="relative group">
+            <Info size={11} className="text-slate-600 cursor-help" />
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 w-48 bg-slate-800 border border-slate-700 text-slate-300 text-xs rounded-lg px-2.5 py-1.5 hidden group-hover:block z-10 pointer-events-none shadow-lg">
+              {tooltip}
+              <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-700" />
+            </div>
+          </div>
+        )}
+      </div>
       <div className="flex items-center gap-2 bg-surface rounded-lg px-3 py-2 border border-slate-700 focus-within:border-brand-500 transition-colors">
         <input
           type="number"
