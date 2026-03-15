@@ -1,8 +1,6 @@
 import { Calculator, ChevronRight } from 'lucide-react'
 import { useCalculatorStore } from '../../store/calculatorStore'
 
-const CURRENCIES = ['USD', 'EUR', 'MXN', 'COP', 'ARS', 'BRL']
-
 function CostRow({ label, value, currency, muted = false }: { label: string; value: number; currency: string; muted?: boolean }) {
   return (
     <div className={`flex items-center justify-between py-2 ${muted ? 'text-slate-500' : 'text-slate-300'}`}>
@@ -18,22 +16,10 @@ function CostRow({ label, value, currency, muted = false }: { label: string; val
 }
 
 export function ResultPanel() {
-  const { breakdown, currency, setCurrency, calculate } = useCalculatorStore()
+  const { breakdown, currency, calculate } = useCalculatorStore()
 
   return (
     <div className="bg-surface-card rounded-2xl border border-brand-700 p-5 flex flex-col gap-5 lg:sticky lg:top-6">
-      {/* Currency selector */}
-      <div className="flex items-center justify-between">
-        <span className="text-slate-400 text-xs uppercase tracking-wide font-medium">Moneda</span>
-        <select
-          value={currency}
-          onChange={(e) => setCurrency(e.target.value)}
-          className="bg-surface border border-slate-700 text-white text-xs rounded-lg px-2 py-1 outline-none focus:border-brand-500"
-        >
-          {CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
-        </select>
-      </div>
-
       {/* Calculate button */}
       <button
         onClick={calculate}

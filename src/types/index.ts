@@ -1,26 +1,28 @@
 // Domain types for 3D print cost calculator
 
-export interface MaterialCost {
-  filamentWeightGrams: number
+export interface FilamentEntry {
+  id: string
+  name: string
+  weightGrams: number
   pricePerKg: number
-  wasteFactor: number // e.g. 1.05 for 5% waste
+  wasteFactor: number
 }
 
 export interface ElectricityCost {
   printHours: number
   printerWatts: number
-  kwhPrice: number // price per kWh in local currency
+  kwhPrice: number
 }
 
 export interface MachineCost {
   printerPrice: number
-  lifeHours: number // estimated total life in hours
+  lifeHours: number
   maintenanceCostPerHour: number
 }
 
 export interface ProfitConfig {
   marginPercent: number
-  failureRiskPercent: number // probability of failed print
+  failureRiskPercent: number
 }
 
 export interface PrintCostBreakdown {
@@ -34,7 +36,7 @@ export interface PrintCostBreakdown {
 }
 
 export interface CalculatorState {
-  material: MaterialCost
+  filaments: FilamentEntry[]
   electricity: ElectricityCost
   machine: MachineCost
   profit: ProfitConfig
