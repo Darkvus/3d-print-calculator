@@ -5,6 +5,7 @@ import { ElectricitySection } from './components/calculator/ElectricitySection'
 import { MachineSection } from './components/calculator/MachineSection'
 import { ProfitSection } from './components/calculator/ProfitSection'
 import { ResultPanel } from './components/calculator/ResultPanel'
+import { IOSInstallBanner } from './components/ui/IOSInstallBanner'
 
 const CURRENCIES = ['USD', 'EUR', 'MXN', 'COP', 'ARS', 'BRL']
 
@@ -60,6 +61,8 @@ export default function App() {
           </div>
         </div>
       </main>
+
+      <IOSInstallBanner />
 
       <footer className="text-center text-slate-600 text-xs py-6 flex flex-col items-center gap-2">
         <span>
