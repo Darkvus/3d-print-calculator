@@ -10,7 +10,7 @@ function newFilament(overrides?: Partial<FilamentEntry>): FilamentEntry {
     name: 'Filamento 1',
     weightGrams: 50,
     pricePerKg: 20,
-    wasteFactor: 1.05,
+    wasteFactor: 1,
     ...overrides,
   }
 }
