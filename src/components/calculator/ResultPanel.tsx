@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Calculator, ChevronRight, ChevronDown, FileDown } from 'lucide-react'
 import { useCalculatorStore } from '../../store/calculatorStore'
 import { exportToPDF } from '../../services/pdfExportService'
+import type { FilamentEntry } from '../../types'
 
 function CostRow({ label, value, currency, muted = false }: { label: string; value: number; currency: string; muted?: boolean }) {
   return (
@@ -17,7 +18,7 @@ function CostRow({ label, value, currency, muted = false }: { label: string; val
   )
 }
 
-function MaterialRow({ filaments, total, currency }: { filaments: ReturnType<typeof useCalculatorStore>['filaments']; total: number; currency: string }) {
+function MaterialRow({ filaments, total, currency }: { filaments: FilamentEntry[]; total: number; currency: string }) {
   const [open, setOpen] = useState(false)
   const multi = filaments.length > 1
 
