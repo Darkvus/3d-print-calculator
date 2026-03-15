@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Zap } from 'lucide-react'
 import { useCalculatorStore } from '../../store/calculatorStore'
 import { Card } from '../ui/Card'
@@ -8,12 +8,28 @@ export function ElectricitySection() {
   const { electricity, setElectricity } = useCalculatorStore()
   const [useMinutes, setUseMinutes] = useState(false)
 
-  const displayValue = useMinutes
+  const numericDisplay = useMinutes
     ? Math.round(electricity.printHours * 60 * 100) / 100
     : electricity.printHours
 
-  const handleTimeChange = (v: number) => {
-    setElectricity({ printHours: useMinutes ? v / 60 : v })
+  const [display, setDisplay] = useState(String(numericDisplay))
+
+  useEffect(() => {
+    setDisplay(String(numericDisplay))
+  }, [useMinutes]) // only reset display string on unit toggle
+
+  const handleTimeChange = (raw: string) => {
+    setDisplay(raw)
+    const parsed = parseFloat(raw)
+    if (!isNaN(parsed)) setElectricity({ printHours: useMinutes ? parsed / 60 : parsed })
+  }
+
+  const handleTimeBlur = () => {
+    const min = useMinutes ? 1 : 0.1
+    const parsed = parseFloat(display)
+    const clamped = isNaN(parsed) ? min : Math.max(min, parsed)
+    setDisplay(String(clamped))
+    setElectricity({ printHours: useMinutes ? clamped / 60 : clamped })
   }
 
   const handleToggle = (toMinutes: boolean) => {
@@ -45,10 +61,12 @@ export function ElectricitySection() {
         <div className="flex items-center gap-2 bg-surface rounded-lg px-3 py-2 border border-slate-700 focus-within:border-brand-500 transition-colors">
           <input
             type="number"
+            inputMode="decimal"
             min={useMinutes ? 1 : 0.1}
             step={useMinutes ? 1 : 0.1}
-            value={displayValue}
-            onChange={(e) => handleTimeChange(parseFloat(e.target.value) || 0)}
+            value={display}
+            onChange={(e) => handleTimeChange(e.target.value)}
+            onBlur={handleTimeBlur}
             className="bg-transparent text-white w-full outline-none text-sm"
           />
           <span className="text-slate-500 text-xs shrink-0">{useMinutes ? 'min' : 'horas'}</span>
