@@ -8,14 +8,14 @@
     <meta name="description" content="Calcula el costo real de tus impresiones 3D. Multi-filamento, post-procesado, exporta a PDF y comparte presupuestos." />
 
     <!-- Open Graph (WhatsApp, Facebook, Telegram) -->
-    <meta property="og:type"        content="website" />
-    <meta property="og:site_name"   content="Printimator" />
-    <meta property="og:title"       content="Printimator — Calculadora de costos 3D" />
-    <meta property="og:description" content="Calcula el costo real de tus impresiones 3D. Multi-filamento, post-procesado, exporta a PDF y comparte presupuestos." />
-    <meta property="og:image"       content="https://3d-print-calculator-sand.vercel.app/og-image.png" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height"content="630" />
-    <meta property="og:url"         content="https://3d-print-calculator-sand.vercel.app/" />
+    <meta property="og:type"         content="website" />
+    <meta property="og:site_name"    content="Printimator" />
+    <meta property="og:title"        content="Printimator — Calculadora de costos 3D" />
+    <meta property="og:description"  content="Calcula el costo real de tus impresiones 3D. Multi-filamento, post-procesado, exporta a PDF y comparte presupuestos." />
+    <meta property="og:image"        content="https://3d-print-calculator-sand.vercel.app/og-image.png" />
+    <meta property="og:image:width"  content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:url"          content="https://3d-print-calculator-sand.vercel.app/" />
 
     <!-- Twitter / X Card -->
     <meta name="twitter:card"        content="summary_large_image" />
@@ -23,21 +23,25 @@
     <meta name="twitter:description" content="Calcula el costo real de tus impresiones 3D. Multi-filamento, post-procesado, exporta a PDF y comparte presupuestos." />
     <meta name="twitter:image"       content="https://3d-print-calculator-sand.vercel.app/og-image.png" />
 
-    <!-- PWA manifest -->
-    <link rel="manifest" href="/manifest.json" />
-
-    <!-- Favicon -->
+    <!-- Favicon (SVG primero, PNG como fallback) -->
     <link rel="icon" type="image/svg+xml" href="/printimator.svg" />
-    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="icon" type="image/png"     href="/favicon.png" />
 
-    <!-- iOS PWA -->
-    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <!-- iOS PWA — Safari necesita PNG, no soporta SVG -->
+    <meta name="apple-mobile-web-app-capable"              content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style"     content="black-translucent" />
+    <meta name="apple-mobile-web-app-title"                content="Printimator" />
+    <link rel="apple-touch-icon"                           href="/apple-touch-icon.png" />
+    <!-- Tamaños adicionales para distintos dispositivos iOS -->
+    <link rel="apple-touch-icon" sizes="152x152"           href="/icon-152.png" />
+    <link rel="apple-touch-icon" sizes="144x144"           href="/icon-144.png" />
+    <link rel="apple-touch-icon" sizes="128x128"           href="/icon-128.png" />
+
+    <!-- iOS splash screens (portrait) -->
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Printimator" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
-    <!-- Theme color (Android + Safari tab) -->
-    <meta name="theme-color" content="#6366f1" />
+    <!-- Theme color (Android Chrome tab + Safari) -->
+    <meta name="theme-color" content="#4f46e5" />
   </head>
   <body>
     <div id="root"></div>
