@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ChevronDown } from 'lucide-react'
+import { useCalculatorStore } from '../../store/calculatorStore'
 
 interface CardProps {
   title: string
@@ -10,7 +11,12 @@ interface CardProps {
 }
 
 export function Card({ title, icon, children, accent = 'border-slate-700', defaultOpen = true }: CardProps) {
-  const [open, setOpen] = useState(defaultOpen)
+  const compactMode = useCalculatorStore((s) => s.compactMode)
+  const [open, setOpen] = useState(compactMode ? false : defaultOpen)
+
+  useEffect(() => {
+    setOpen(compactMode ? false : true)
+  }, [compactMode])
 
   return (
     <div className={`bg-surface-card rounded-2xl border ${accent} flex flex-col`}>

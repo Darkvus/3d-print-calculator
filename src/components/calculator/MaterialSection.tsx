@@ -2,6 +2,7 @@ import { Layers, Plus, Trash2 } from 'lucide-react'
 import { useCalculatorStore } from '../../store/calculatorStore'
 import { Card } from '../ui/Card'
 import { InputField } from '../ui/InputField'
+import { FILAMENT_PRESETS } from '../../data/filamentPresets'
 
 export function MaterialSection() {
   const { filaments, addFilament, removeFilament, updateFilament } = useCalculatorStore()
@@ -35,6 +36,21 @@ export function MaterialSection() {
                 </button>
               )}
             </div>
+
+            {/* Preset selector */}
+            <select
+              defaultValue=""
+              onChange={(e) => {
+                const preset = FILAMENT_PRESETS.find((p) => p.name === e.target.value)
+                if (preset) updateFilament(f.id, { name: preset.name, pricePerKg: preset.pricePerKg, wasteFactor: preset.wasteFactor })
+              }}
+              className="bg-surface border border-slate-700 text-slate-400 text-xs rounded-lg px-2 py-1.5 outline-none focus:border-brand-500 transition-colors"
+            >
+              <option value="" disabled>Preset de material...</option>
+              {FILAMENT_PRESETS.map((p) => (
+                <option key={p.name} value={p.name}>{p.name}</option>
+              ))}
+            </select>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <InputField

@@ -1,5 +1,5 @@
 import jsPDF from 'jspdf'
-import type { FilamentEntry, PrintCostBreakdown } from '../types'
+import type { FilamentEntry, PostProcessing, PrintCostBreakdown } from '../types'
 
 interface ExportParams {
   filaments: FilamentEntry[]
@@ -13,6 +13,7 @@ interface ExportParams {
   maintenanceCostPerHour: number
   marginPercent: number
   failureRiskPercent: number
+  postProcessing: PostProcessing
 }
 
 const BRAND = '#6366f1'
@@ -37,7 +38,7 @@ export function exportToPDF(p: ExportParams) {
   doc.setTextColor('#ffffff')
   doc.setFontSize(16)
   doc.setFont('helvetica', 'bold')
-  doc.text('3D Print Cost Calculator', pad, 12)
+  doc.text('Printimator', pad, 12)
 
   doc.setFontSize(8)
   doc.setFont('helvetica', 'normal')
@@ -103,11 +104,24 @@ export function exportToPDF(p: ExportParams) {
   row(`Costo de máquina`, fmt(p.breakdown.machine, p.currency))
   y += 2
 
+  // ── Post-processing ───────────────────────────────────────────
+  if (p.breakdown.postProcessing > 0) {
+    sectionTitle('Post-procesado')
+    const pp = p.postProcessing
+    const totalLaborHours = pp.sandingHours + pp.supportRemovalHours + pp.assemblyHours
+    if (totalLaborHours > 0) row(`Mano de obra (${totalLaborHours}h × ${fmt(pp.laborHourlyRate, p.currency)}/h)`, fmt(totalLaborHours * pp.laborHourlyRate, p.currency))
+    if (pp.paintMaterialCost > 0) row('Pintura / imprimación', fmt(pp.paintMaterialCost, p.currency))
+    if (pp.finishMaterialCost > 0) row('Acabados especiales', fmt(pp.finishMaterialCost, p.currency))
+    if (pp.uvCuringHours > 0) row(`Curado UV (${pp.uvCuringHours}h · ${pp.uvCuringWatts}W)`, fmt(p.breakdown.postProcessing - totalLaborHours * pp.laborHourlyRate - pp.paintMaterialCost - pp.finishMaterialCost, p.currency))
+    y += 2
+  }
+
   // ── Breakdown ─────────────────────────────────────────────────
   sectionTitle('Desglose de costos')
   row('Material', fmt(p.breakdown.material, p.currency))
   row('Electricidad', fmt(p.breakdown.electricity, p.currency))
   row('Máquina', fmt(p.breakdown.machine, p.currency))
+  if (p.breakdown.postProcessing > 0) row('Post-procesado', fmt(p.breakdown.postProcessing, p.currency))
   divider()
   row('Subtotal', fmt(p.breakdown.subtotal, p.currency), true)
   row(`Buffer de riesgo (${p.failureRiskPercent}%)`, fmt(p.breakdown.riskBuffer, p.currency))
@@ -130,7 +144,7 @@ export function exportToPDF(p: ExportParams) {
   doc.setTextColor(MUTED)
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(7)
-  doc.text('Generado con 3D Print Cost Calculator · github.com/Darkvus', W / 2, 287, { align: 'center' })
+  doc.text('Generado con Printimator · github.com/Darkvus', W / 2, 287, { align: 'center' })
 
   doc.save(`coste-impresion-${Date.now()}.pdf`)
 }

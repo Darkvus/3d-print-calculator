@@ -25,10 +25,29 @@ export interface ProfitConfig {
   failureRiskPercent: number
 }
 
+export interface PostProcessing {
+  // Mano de obra (tarifa compartida)
+  laborHourlyRate: number
+  // Lijado / desbaste
+  sandingHours: number
+  // Remoción de soportes
+  supportRemovalHours: number
+  // Ensamblaje
+  assemblyHours: number
+  // Pintura / imprimación
+  paintMaterialCost: number
+  // Acabados especiales (barniz, epoxy, relleno)
+  finishMaterialCost: number
+  // Curado UV
+  uvCuringHours: number
+  uvCuringWatts: number
+}
+
 export interface PrintCostBreakdown {
   material: number
   electricity: number
   machine: number
+  postProcessing: number
   subtotal: number
   riskBuffer: number
   profit: number
@@ -40,4 +59,6 @@ export interface CalculatorState {
   electricity: ElectricityCost
   machine: MachineCost
   profit: ProfitConfig
+  postProcessing: PostProcessing
+  batchQuantity: number
 }

@@ -1,7 +1,11 @@
 import { useState } from 'react'
-import { Calculator, ChevronRight, ChevronDown, FileDown } from 'lucide-react'
+import { Calculator, ChevronRight, ChevronDown, FileDown, FileSpreadsheet, Copy, Share2, Check, Package } from 'lucide-react'
 import { useCalculatorStore } from '../../store/calculatorStore'
 import { exportToPDF } from '../../services/pdfExportService'
+import { exportToCSV } from '../../services/csvExportService'
+import { copyShareURL, copyTextSummary } from '../../services/shareService'
+import { DonutChart } from '../ui/DonutChart'
+import { InputField } from '../ui/InputField'
 import type { FilamentEntry } from '../../types'
 
 function CostRow({ label, value, currency, muted = false }: { label: string; value: number; currency: string; muted?: boolean }) {
@@ -56,8 +60,55 @@ function MaterialRow({ filaments, total, currency }: { filaments: FilamentEntry[
   )
 }
 
+function ProfitabilityBadge({ marginPercent }: { marginPercent: number }) {
+  let color: string
+  let label: string
+  let dot: string
+
+  if (marginPercent < 15) {
+    color = 'text-red-400 bg-red-950/40 border-red-900'
+    dot = 'bg-red-400'
+    label = 'Margen bajo'
+  } else if (marginPercent < 35) {
+    color = 'text-yellow-400 bg-yellow-950/40 border-yellow-900'
+    dot = 'bg-yellow-400'
+    label = 'Margen medio'
+  } else {
+    color = 'text-green-400 bg-green-950/40 border-green-900'
+    dot = 'bg-green-400'
+    label = 'Margen alto'
+  }
+
+  return (
+    <div className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border ${color}`}>
+      <span className={`w-1.5 h-1.5 rounded-full ${dot}`} />
+      {label} ({marginPercent}%)
+    </div>
+  )
+}
+
+function CopyButton({ onClick, label, icon }: { onClick: () => Promise<void>; label: string; icon: React.ReactNode }) {
+  const [copied, setCopied] = useState(false)
+
+  const handle = async () => {
+    await onClick()
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <button
+      onClick={handle}
+      className="flex-1 border border-slate-700 hover:bg-slate-800 text-slate-400 hover:text-slate-300 font-medium py-2 rounded-xl flex items-center justify-center gap-1.5 transition-colors text-xs"
+    >
+      {copied ? <Check size={13} className="text-green-400" /> : icon}
+      {copied ? 'Copiado' : label}
+    </button>
+  )
+}
+
 export function ResultPanel() {
-  const { breakdown, currency, calculate, filaments, electricity, machine, profit } = useCalculatorStore()
+  const { breakdown, currency, calculate, filaments, electricity, machine, profit, postProcessing, batchQuantity, setBatchQuantity } = useCalculatorStore()
 
   const handleExport = () => {
     if (!breakdown) return
@@ -73,11 +124,35 @@ export function ResultPanel() {
       maintenanceCostPerHour: machine.maintenanceCostPerHour,
       marginPercent: profit.marginPercent,
       failureRiskPercent: profit.failureRiskPercent,
+      postProcessing,
     })
   }
 
+  const handleCSV = () => {
+    if (!breakdown) return
+    exportToCSV({ filaments, breakdown, currency, batchQuantity, marginPercent: profit.marginPercent, failureRiskPercent: profit.failureRiskPercent })
+  }
+
+  const getState = () => useCalculatorStore.getState()
+
+  const unitPrice = breakdown ? breakdown.total / batchQuantity : null
+
   return (
     <div className="bg-surface-card rounded-2xl border border-brand-700 p-5 flex flex-col gap-5 lg:sticky lg:top-6">
+      {/* Batch quantity */}
+      <div className="flex items-center gap-3">
+        <Package size={14} className="text-slate-500 shrink-0" />
+        <InputField
+          label="Cantidad de piezas"
+          value={batchQuantity}
+          unit="uds"
+          min={1}
+          step={1}
+          tooltip="Multiplica el costo total para un lote. El precio unitario se calcula dividiendo el total entre este número."
+          onChange={(v) => setBatchQuantity(Math.max(1, Math.round(v)))}
+        />
+      </div>
+
       {/* Calculate button */}
       <button
         onClick={calculate}
@@ -90,12 +165,28 @@ export function ResultPanel() {
       {/* Breakdown */}
       {breakdown && (
         <>
+          {/* Profitability badge */}
+          <div className="flex justify-center">
+            <ProfitabilityBadge marginPercent={profit.marginPercent} />
+          </div>
+
+          {/* Donut chart */}
+          <DonutChart
+            slices={[
+              { label: 'Material',       value: breakdown.material,       color: '#0ea5e9' },
+              { label: 'Electricidad',   value: breakdown.electricity,    color: '#eab308' },
+              { label: 'Máquina',        value: breakdown.machine,        color: '#a855f7' },
+              { label: 'Post-procesado', value: breakdown.postProcessing, color: '#14b8a6' },
+            ]}
+          />
+
           <div className="flex flex-col">
             <div className="border-b border-slate-700 pb-3 mb-1">
               <p className="text-xs text-slate-500 uppercase tracking-wide font-medium mb-2">Desglose</p>
               <MaterialRow filaments={filaments} total={breakdown.material} currency={currency} />
               <CostRow label="Electricidad" value={breakdown.electricity} currency={currency} muted />
               <CostRow label="Máquina" value={breakdown.machine} currency={currency} muted />
+              <CostRow label="Post-procesado" value={breakdown.postProcessing} currency={currency} muted />
             </div>
 
             <CostRow label="Subtotal" value={breakdown.subtotal} currency={currency} />
@@ -103,21 +194,52 @@ export function ResultPanel() {
             <CostRow label="Margen de ganancia" value={breakdown.profit} currency={currency} muted />
 
             <div className="mt-3 pt-3 border-t border-slate-600 flex items-center justify-between">
-              <span className="text-slate-300 font-semibold">Precio final</span>
+              <span className="text-slate-300 font-semibold">{batchQuantity > 1 ? `Total (x${batchQuantity})` : 'Precio final'}</span>
               <span className="text-2xl font-bold text-brand-500 font-mono">
                 {currency} {breakdown.total.toFixed(2)}
               </span>
             </div>
+
+            {batchQuantity > 1 && unitPrice !== null && (
+              <div className="mt-1 flex items-center justify-between">
+                <span className="text-slate-500 text-sm">Por unidad</span>
+                <span className="text-lg font-semibold text-slate-300 font-mono">
+                  {currency} {unitPrice.toFixed(2)}
+                </span>
+              </div>
+            )}
           </div>
 
-          {/* Export PDF button */}
-          <button
-            onClick={handleExport}
-            className="w-full border border-brand-700 hover:bg-brand-900/40 text-brand-400 hover:text-brand-300 font-medium py-2.5 rounded-xl flex items-center justify-center gap-2 transition-colors text-sm"
-          >
-            <FileDown size={15} />
-            Exportar PDF
-          </button>
+          {/* Export actions */}
+          <div className="flex gap-2">
+            <button
+              onClick={handleExport}
+              className="flex-1 border border-brand-700 hover:bg-brand-900/40 text-brand-400 hover:text-brand-300 font-medium py-2 rounded-xl flex items-center justify-center gap-1.5 transition-colors text-xs"
+            >
+              <FileDown size={13} />
+              PDF
+            </button>
+            <button
+              onClick={handleCSV}
+              className="flex-1 border border-slate-700 hover:bg-slate-800 text-slate-400 hover:text-slate-300 font-medium py-2 rounded-xl flex items-center justify-center gap-1.5 transition-colors text-xs"
+            >
+              <FileSpreadsheet size={13} />
+              CSV
+            </button>
+          </div>
+
+          <div className="flex gap-2">
+            <CopyButton
+              icon={<Copy size={13} />}
+              label="Copiar resumen"
+              onClick={() => copyTextSummary(breakdown, currency, batchQuantity)}
+            />
+            <CopyButton
+              icon={<Share2 size={13} />}
+              label="Compartir URL"
+              onClick={() => copyShareURL({ ...getState(), batchQuantity })}
+            />
+          </div>
         </>
       )}
 

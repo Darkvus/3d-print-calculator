@@ -73,13 +73,6 @@ export function ElectricitySection() {
         </div>
       </div>
       <InputField
-        label="Consumo de la impresora"
-        value={electricity.printerWatts}
-        unit="W"
-        min={1}
-        onChange={(v) => setElectricity({ printerWatts: v })}
-      />
-      <InputField
         label="Precio del kWh"
         value={electricity.kwhPrice}
         unit="/ kWh"
